@@ -32,7 +32,7 @@ For translating Tusky into your language, visit https://weblate.tusky.app/
 
 ### Head of development
 
-This fork was developed by [ppktest@mastodon.social](https://mastodon.social/@ppktest).
+This fork was developed by [ppktest@masthead.social](https://masthead.social/@ppktest).
 
 The Tusky app was developed by [Vavassor@mastodon.social](https://mastodon.social/@Vavassor).
 The current maintainer is [ConnyDuck@chaos.social](https://chaos.social/@ConnyDuck).
