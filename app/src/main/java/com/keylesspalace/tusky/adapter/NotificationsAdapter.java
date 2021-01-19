@@ -334,7 +334,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             Context context = message.getContext();
 
             String format = context.getString(R.string.notification_follow_format);
-            String wrappedDisplayName = StringUtils.unicodeWrap(account.getName());
+            String wrappedDisplayName = StringUtils.unicodeWrap(account.getName()); //pending by ppkpub,20210114
             String wholeMessage = String.format(format, wrappedDisplayName);
             CharSequence emojifiedMessage = CustomEmojiHelper.emojify(wholeMessage, account.getEmojis(), message);
             message.setText(emojifiedMessage);

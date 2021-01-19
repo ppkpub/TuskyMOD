@@ -402,4 +402,6 @@
     <string name="hashtags">話題</string>
     <string name="notification_follow_request_name">關注請求</string>
     <string name="action_edit">編輯</string>
+    
+    <string name="lbl_payto_odin">奧丁號收付款</string>
 </resources>

@@ -19,6 +19,9 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
@@ -28,9 +31,14 @@ import com.keylesspalace.tusky.BottomSheetActivity
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.components.search.adapter.SearchPagerAdapter
 import com.keylesspalace.tusky.di.ViewModelFactory
+import com.keylesspalace.tusky.util.LinkHelper
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import kotlinx.android.synthetic.main.activity_account.*
 import kotlinx.android.synthetic.main.activity_search.*
+import org.ppkpub.ppklib.ODIN
+import org.ppkpub.ppklib.PPkDefine
+import org.ppkpub.ppklib.PTAP01DID
 import javax.inject.Inject
 
 class SearchActivity : BottomSheetActivity(), HasAndroidInjector {
@@ -101,11 +109,49 @@ class SearchActivity : BottomSheetActivity(), HasAndroidInjector {
         }
     }
 
+    //modified by ppkpub,20210117
     private fun handleIntent(intent: Intent) {
         if (Intent.ACTION_SEARCH == intent.action) {
             viewModel.currentQuery = intent.getStringExtra(SearchManager.QUERY) ?: ""
+            //Log.d("currentQuery1",viewModel.currentQuery);
+
+            val matcher = ODIN.matchPPkURIs(viewModel.currentQuery)
+            if (matcher.find()) {
+                syncPPkEnd=false;
+                val user_odin_uri = ODIN.formatPPkURI(matcher.group(), false)
+                if (user_odin_uri != null) {
+                    Thread(Runnable { syncUpdateQueryODIN(user_odin_uri) }).start()
+                    while (!syncPPkEnd) {
+                        Thread.sleep(100)
+                    }
+                }
+            }
+            //Log.d("currentQuery2",viewModel.currentQuery);
             viewModel.search(viewModel.currentQuery)
         }
+    }
+
+    //added by ppkpub,20210117
+    private var syncPPkEnd = false //modified by ppkpub,20210116
+
+    private fun syncUpdateQueryODIN(user_odin_uri: String) {
+        Log.d("syncUpdateQueryODIN","user_odin_uri="+user_odin_uri);
+        val user_info = PTAP01DID.getPubUserInfo(user_odin_uri)
+        if (user_info != null) {
+            var obj_sns = user_info.optJSONObject(PPkDefine.ODIN_EXT_KEY_SNS);
+            if(obj_sns!=null){
+                var array_ids = obj_sns.optJSONArray("ActivityPub");
+                if(array_ids!=null) {
+                    var primary_mastodon_id = array_ids.optString(0);
+                    Log.d("syncUpdateQueryODIN","Found "+primary_mastodon_id);
+                    if (primary_mastodon_id != null) {
+                        viewModel.currentQuery = "@"+primary_mastodon_id
+                    }
+                }
+            }
+        }
+
+        syncPPkEnd = true
     }
 
     private fun setupSearchView(searchView: SearchView) {

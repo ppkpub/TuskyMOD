@@ -558,15 +558,13 @@
 
 
     <string name="create_poll_title">Poll</string>
-    <string name="label_duration">Duration</string>
-    <string name="duration_indefinite">Indefinite</string>
-    <string name="duration_5_min">5 minutes</string>
-    <string name="duration_30_min">30 minutes</string>
-    <string name="duration_1_hour">1 hour</string>
-    <string name="duration_6_hours">6 hours</string>
-    <string name="duration_1_day">1 day</string>
-    <string name="duration_3_days">3 days</string>
-    <string name="duration_7_days">7 days</string>
+    <string name="poll_duration_5_min">5 minutes</string>
+    <string name="poll_duration_30_min">30 minutes</string>
+    <string name="poll_duration_1_hour">1 hour</string>
+    <string name="poll_duration_6_hours">6 hours</string>
+    <string name="poll_duration_1_day">1 day</string>
+    <string name="poll_duration_3_days">3 days</string>
+    <string name="poll_duration_7_days">7 days</string>
     <string name="add_poll_choice">Add choice</string>
     <string name="poll_allow_multiple_choices">Multiple choices</string>
     <string name="poll_new_choice_hint">Choice %d</string>
@@ -595,4 +593,8 @@
     <string name="wellbeing_hide_stats_profile">Hide quantitative stats on profiles</string>
     <string name="error_upload_max_media_reached">You cannot upload more than %1$d media attachments.</string>
 
+    <string name="lbl_wrong_odin">Wrong ODIN</string>
+    <string name="lbl_payto_odin">PayToODIN</string>
+    <string name="status_payto_odin_link">Click-Pay</string>
+    <string name="status_tail_about_odin">About PPk ODIN(ID on Bitcoin+Blockchains) http://odin.ppkpub.org</string>
 </resources>

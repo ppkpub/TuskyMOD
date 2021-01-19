@@ -436,13 +436,13 @@
     <string name="failed_search">搜索失败</string>
     <string name="pref_title_show_notifications_filter">显示通知过滤器</string>
     <string name="create_poll_title">投票</string>
-    <string name="duration_5_min">5 分钟</string>
-    <string name="duration_30_min">30 分钟</string>
-    <string name="duration_1_hour">1 小时</string>
-    <string name="duration_6_hours">6 小时</string>
-    <string name="duration_1_day">1 天</string>
-    <string name="duration_3_days">3 天</string>
-    <string name="duration_7_days">7 天</string>
+    <string name="poll_duration_5_min">5 分钟</string>
+    <string name="poll_duration_30_min">30 分钟</string>
+    <string name="poll_duration_1_hour">1 小时</string>
+    <string name="poll_duration_6_hours">6 小时</string>
+    <string name="poll_duration_1_day">1 天</string>
+    <string name="poll_duration_3_days">3 天</string>
+    <string name="poll_duration_7_days">7 天</string>
     <string name="add_poll_choice">添加选择</string>
     <string name="poll_allow_multiple_choices">多项选择</string>
     <string name="poll_new_choice_hint">选择 %d</string>
@@ -481,4 +481,9 @@
     <string name="title_announcements">公告</string>
     <string name="account_note_saved">已保存</string>
     <string name="account_note_hint">此账号的备注</string>
+    
+    <string name="lbl_wrong_odin">错误的奥丁号</string>
+    <string name="lbl_payto_odin">奥丁号收付款</string>
+    <string name="status_payto_odin_link">点击付款链接</string>
+    <string name="status_tail_about_odin">了解PPk奥丁号(比特币和区块链上的自主标识) http://odin.ppkpub.org</string>
 </resources>

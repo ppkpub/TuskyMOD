@@ -330,8 +330,7 @@ interface MastodonApi {
     @POST("api/v1/accounts/{id}/mute")
     fun muteAccount(
             @Path("id") accountId: String,
-            @Field("notifications") notifications: Boolean? = null,
-            @Field("duration") duration: Int? = null
+            @Field("notifications") notifications: Boolean? = null
     ): Single<Relationship>
 
     @POST("api/v1/accounts/{id}/unmute")

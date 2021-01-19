@@ -54,6 +54,8 @@ public abstract class BaseActivity extends AppCompatActivity implements Injectab
 
     @Inject
     public AccountManager accountManager;
+    
+    public static String ACTIVE_HOST_DOMAIN = null; //Added by ppkpub.org,20210116
 
     private static final int REQUESTER_NONE = Integer.MAX_VALUE;
     private HashMap<Integer, PermissionRequester> requesters;
@@ -144,6 +146,8 @@ public abstract class BaseActivity extends AppCompatActivity implements Injectab
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivityWithSlideInAnimation(intent);
             finish();
+        }else{
+            ACTIVE_HOST_DOMAIN = account.getDomain(); //Added by ppkpub.org,20210116
         }
     }
 

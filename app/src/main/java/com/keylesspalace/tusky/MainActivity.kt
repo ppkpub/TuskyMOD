@@ -554,9 +554,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         val activeTabPosition = if (selectNotificationTab) notificationTabPosition else 0
         mainToolbar.title = tabs[activeTabPosition].title(this@MainActivity)
-        mainToolbar.setOnClickListener {
-            (adapter.getFragment(activeTabLayout.selectedTabPosition) as? ReselectableFragment)?.onReselect()
-        }
 
     }
 

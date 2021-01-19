@@ -14,6 +14,12 @@ def getGitSha = {
     return stdout.toString().trim()
 }
 
+def buildTime = {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMdd:HHmmss')
+    return formattedDate
+}
+
 android {
     compileSdkVersion 29
     defaultConfig {
@@ -49,11 +55,14 @@ android {
 
     flavorDimensions "color"
     productFlavors {
-        blue {}
-        green {
+        blue {
             resValue "string", "app_name", APP_NAME + " Test"
             applicationIdSuffix ".test"
-            versionNameSuffix "-" + getGitSha()
+            versionNameSuffix "-PPkTEST" + buildTime()
+        }
+        green {
+            resValue "string", "app_name", APP_NAME
+            versionNameSuffix "-PPk" + buildTime()
         }
     }
 

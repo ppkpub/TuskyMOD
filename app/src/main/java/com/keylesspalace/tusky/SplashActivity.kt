@@ -32,6 +32,9 @@ class SplashActivity : AppCompatActivity(), Injectable {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //Init ppk cache, by ppkpub,20210115
+        org.ppkpub.ppklib.NetCache.init( this.cacheDir.absolutePath+"/" );
+
         /** delete old notification channels */
         NotificationHelper.deleteLegacyNotificationChannels(this, accountManager)
 

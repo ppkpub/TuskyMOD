@@ -16,16 +16,22 @@
 package com.keylesspalace.tusky.viewdata;
 
 import android.os.Build;
+import androidx.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.util.Log;
 
-import androidx.annotation.Nullable;
-
+import com.keylesspalace.tusky.BaseActivity;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.Poll;
 import com.keylesspalace.tusky.entity.Status;
+
+import org.json.JSONObject;
+import org.ppkpub.ppklib.ODIN;
+import org.ppkpub.ppklib.PPkDefine;
+import org.ppkpub.ppklib.PTAP01DID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +39,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
 
 /**
  * Created by charlag on 11/07/2017.
@@ -70,9 +77,9 @@ public abstract class StatusViewData {
         private final boolean isSensitive;
         final boolean isExpanded;
         private final boolean isShowingContent;
-        private final String userFullName;
-        private final String nickname;
-        private final String avatar;
+        private String userFullName; //modified by ppkpub,20210115
+        private String nickname;     //modified by ppkpub,20210115
+        private String avatar;       //modified by ppkpub,20210115
         private final Date createdAt;
         private final int reblogsCount;
         private final int favouritesCount;
@@ -86,7 +93,6 @@ public abstract class StatusViewData {
         private final Status.Application application;
         private final List<Emoji> statusEmojis;
         private final List<Emoji> accountEmojis;
-        private final List<Emoji> rebloggedByAccountEmojis;
         @Nullable
         private final Card card;
         private final boolean isCollapsible; /** Whether the status meets the requirement to be collapse */
@@ -95,16 +101,19 @@ public abstract class StatusViewData {
         private final PollViewData poll;
         private final boolean isBot;
 
+        private boolean syncPPkEnd=false;//modified by ppkpub,20210115
+
         public Concrete(String id, Spanned content, boolean reblogged, boolean favourited, boolean bookmarked, boolean muted,
                         @Nullable String spoilerText, Status.Visibility visibility, List<Attachment> attachments,
                         @Nullable String rebloggedByUsername, @Nullable String rebloggedAvatar, boolean sensitive, boolean isExpanded,
                         boolean isShowingContent, String userFullName, String nickname, String avatar,
                         Date createdAt, int reblogsCount, int favouritesCount, @Nullable String inReplyToId,
                         @Nullable Status.Mention[] mentions, String senderId, boolean rebloggingEnabled,
-                        Status.Application application, List<Emoji> statusEmojis, List<Emoji> accountEmojis, List<Emoji> rebloggedByAccountEmojis, @Nullable Card card,
+                        Status.Application application, List<Emoji> statusEmojis, List<Emoji> accountEmojis, @Nullable Card card,
                         boolean isCollapsible, boolean isCollapsed, @Nullable PollViewData poll, boolean isBot) {
 
             this.id = id;
+
             if (Build.VERSION.SDK_INT == 23) {
                 // https://github.com/tuskyapp/Tusky/issues/563
                 this.content = replaceCrashingCharacters(content);
@@ -115,6 +124,35 @@ public abstract class StatusViewData {
                 this.spoilerText = spoilerText;
                 this.nickname = nickname;
             }
+
+            //modified by ppkpub,20210115
+            try {
+                this.userFullName = userFullName;
+                this.avatar = avatar;
+                this.syncPPkEnd=false;
+
+                Matcher matcher = ODIN.matchPPkURIs(userFullName);
+                if (matcher.find()) {
+                    //Log.d("statusview",content.toString());
+                    final String user_odin_uri = ODIN.formatPPkURI(matcher.group(),false);
+                    if(user_odin_uri!=null) {
+                        new Thread(new Runnable(){
+                            @Override
+                            public void run() {
+                                syncUpdateOdinInfo(user_odin_uri);
+                            }
+                        }).start();
+                        while (!syncPPkEnd) {
+                            Thread.sleep(100);
+                        }
+                    }
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //end
+
             this.reblogged = reblogged;
             this.favourited = favourited;
             this.bookmarked = bookmarked;
@@ -126,8 +164,6 @@ public abstract class StatusViewData {
             this.isSensitive = sensitive;
             this.isExpanded = isExpanded;
             this.isShowingContent = isShowingContent;
-            this.userFullName = userFullName;
-            this.avatar = avatar;
             this.createdAt = createdAt;
             this.reblogsCount = reblogsCount;
             this.favouritesCount = favouritesCount;
@@ -138,12 +174,28 @@ public abstract class StatusViewData {
             this.application = application;
             this.statusEmojis = statusEmojis;
             this.accountEmojis = accountEmojis;
-            this.rebloggedByAccountEmojis = rebloggedByAccountEmojis;
             this.card = card;
             this.isCollapsible = isCollapsible;
             this.isCollapsed = isCollapsed;
             this.poll = poll;
             this.isBot = isBot;
+        }
+
+        //added by ppkpub,20210115
+        private void syncUpdateOdinInfo(String user_odin_uri){
+            JSONObject user_info = PTAP01DID.getPubUserInfo(user_odin_uri);
+            if(user_info!=null) {
+                if(PTAP01DID.isSameSnsUser("ActivityPub",nickname,BaseActivity.ACTIVE_HOST_DOMAIN,user_info.optJSONObject(PPkDefine.ODIN_EXT_KEY_SNS))) {
+                    nickname = user_odin_uri;
+                    userFullName = user_info.optString("name", "anonymous");
+                    String odin_avatar = user_info.optString("avatar");
+                    if(odin_avatar!=null && odin_avatar.length()>0)
+                        avatar = odin_avatar;
+                }else{
+                    userFullName ="Wrong ODIN";
+                }
+            }
+            syncPPkEnd=true;
         }
 
         public String getId() {
@@ -261,10 +313,6 @@ public abstract class StatusViewData {
             return accountEmojis;
         }
 
-        public List<Emoji> getRebloggedByAccountEmojis() {
-            return rebloggedByAccountEmojis;
-        }
-
         @Nullable
         public Card getCard() {
             return card;
@@ -331,7 +379,6 @@ public abstract class StatusViewData {
                     Objects.equals(application, concrete.application) &&
                     Objects.equals(statusEmojis, concrete.statusEmojis) &&
                     Objects.equals(accountEmojis, concrete.accountEmojis) &&
-                    Objects.equals(rebloggedByAccountEmojis, concrete.rebloggedByAccountEmojis) &&
                     Objects.equals(card, concrete.card) &&
                     Objects.equals(poll, concrete.poll)
                     && isCollapsed == concrete.isCollapsed;
@@ -437,7 +484,6 @@ public abstract class StatusViewData {
         private Status.Application application;
         private List<Emoji> statusEmojis;
         private List<Emoji> accountEmojis;
-        private List<Emoji> rebloggedByAccountEmojis;
         private Card card;
         private boolean isCollapsible; /** Whether the status meets the requirement to be collapsed */
         private boolean isCollapsed; /** Whether the status is shown partially or fully */
@@ -622,11 +668,6 @@ public abstract class StatusViewData {
             return this;
         }
 
-        public Builder setRebloggedByEmojis(List<Emoji> emojis) {
-            this.rebloggedByAccountEmojis = emojis;
-            return this;
-        }
-
         public Builder setCard(Card card) {
             this.card = card;
             return this;
@@ -670,7 +711,7 @@ public abstract class StatusViewData {
                     visibility, attachments, rebloggedByUsername, rebloggedAvatar, isSensitive, isExpanded,
                     isShowingContent, userFullName, nickname, avatar, createdAt, reblogsCount,
                     favouritesCount, inReplyToId, mentions, senderId, rebloggingEnabled, application,
-                    statusEmojis, accountEmojis, rebloggedByAccountEmojis, card, isCollapsible, isCollapsed, poll, isBot);
+                    statusEmojis, accountEmojis, card, isCollapsible, isCollapsed, poll, isBot);
         }
     }
 }

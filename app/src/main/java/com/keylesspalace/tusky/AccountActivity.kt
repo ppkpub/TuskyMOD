@@ -24,6 +24,9 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
 import android.text.Editable
+import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -35,6 +38,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.emoji.text.EmojiCompat
+import androidx.lifecycle.observe
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.MarginPageTransformer
@@ -65,6 +69,9 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import kotlinx.android.synthetic.main.activity_account.*
 import kotlinx.android.synthetic.main.view_account_moved.*
+import org.ppkpub.ppklib.ODIN
+import org.ppkpub.ppklib.PPkDefine
+import org.ppkpub.ppklib.PTAP01DID
 import java.text.NumberFormat
 import javax.inject.Inject
 import kotlin.math.abs
@@ -373,9 +380,32 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun onAccountChanged(account: Account?) {
         loadedAccount = account ?: return
 
+        //Modified by ppkpub.org 20210115
         val usernameFormatted = getString(R.string.status_username_format, account.username)
         accountUsernameTextView.text = usernameFormatted
-        accountDisplayNameTextView.text = account.name.emojify(account.emojis, accountDisplayNameTextView)
+        val accountDisplayName = account.name.emojify(account.emojis, accountDisplayNameTextView)
+        accountDisplayNameTextView.text = accountDisplayName
+
+        //modified by ppkpub,20210115
+        try {
+            syncPPkEnd = false
+            syncedOdinAvatarURL = null
+
+            val matcher = ODIN.matchPPkURIs(accountDisplayName.toString())
+            if (matcher.find()) {
+                val user_odin_uri = ODIN.formatPPkURI(matcher.group(), false)
+                if (user_odin_uri != null) {
+                    Thread(Runnable { syncUpdateOdinInfo(user_odin_uri) }).start()
+                    while (!syncPPkEnd) {
+                        Thread.sleep(100)
+                    }
+                }
+            }
+
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+        //end
 
         val emojifiedNote = account.note.emojify(account.emojis, accountNoteTextView)
         LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this)
@@ -387,7 +417,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         accountLockedImageView.visible(account.locked)
         accountBadgeTextView.visible(account.bot)
 
-        updateAccountAvatar()
+        updateAccountAvatar(syncedOdinAvatarURL)
         updateToolbar()
         updateMovedAccount()
         updateRemoteAccount()
@@ -397,6 +427,75 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         accountMuteButton.setOnClickListener {
             viewModel.unmuteAccount()
             updateMuteButton()
+        }
+    }
+
+    //added by ppkpub,20210115
+    private var syncPPkEnd = false //modified by ppkpub,20210116
+    private var syncedOdinAvatarURL: String? = null //modified by ppkpub,20210116
+
+    private fun syncUpdateOdinInfo(user_odin_uri: String) {
+        val user_info = PTAP01DID.getPubUserInfo(user_odin_uri)
+        if (user_info != null) {
+            var tmp_sns_id =  loadedAccount?.username; //accountUsernameTextView.text.toString();
+
+            val tmp_host_domain = LinkHelper.getDomain(loadedAccount?.url)
+
+            if(PTAP01DID.isSameSnsUser("ActivityPub",tmp_sns_id,tmp_host_domain,user_info.optJSONObject(PPkDefine.ODIN_EXT_KEY_SNS))) {
+                var tmp_html_str = user_info.optString("name", "anonymous")+" [<a href='https://ppk001.sinaapp.com/odin/?me="+user_odin_uri+"'>"+getResources().getString(R.string.lbl_payto_odin) +"</a>]";
+                accountDisplayNameTextView.setMovementMethod(LinkMovementMethod.getInstance());
+                accountDisplayNameTextView.setText( Html.fromHtml(tmp_html_str) )
+
+                var redirect_sns_uri = accountUsernameTextView.text.toString();
+                if ( redirect_sns_uri.lastIndexOf('@')==0 && BaseActivity.ACTIVE_HOST_DOMAIN!=null) {
+                    redirect_sns_uri = redirect_sns_uri + "@"+BaseActivity.ACTIVE_HOST_DOMAIN ;
+                }
+
+                tmp_html_str = "@<a href='"+user_odin_uri+"'>" + user_odin_uri + "</a> → " + redirect_sns_uri;
+                accountUsernameTextView.setMovementMethod(LinkMovementMethod.getInstance());
+                accountUsernameTextView.setText( Html.fromHtml(tmp_html_str) )
+
+                val odin_avatar = user_info.optString("avatar")
+                if (odin_avatar != null && odin_avatar.length > 0)
+                    syncedOdinAvatarURL = odin_avatar
+            }else{
+                //Log.d("currentQuery",tmp_sns_id+" "+tmp_host_domain)
+                accountDisplayNameTextView.text = getResources().getString(R.string.lbl_wrong_odin)+"("+accountDisplayNameTextView.text+")";
+            }
+        }
+
+        syncPPkEnd = true
+    }
+
+    /**
+     * Load account's avatar and header image
+     */
+    private fun updateAccountAvatar(spec_avatar_url: String?) {
+        loadedAccount?.let { account ->
+
+            val avatar_url=spec_avatar_url ?: account.avatar
+            loadAvatar(
+                    avatar_url,
+                    accountAvatarImageView,
+                    resources.getDimensionPixelSize(R.dimen.avatar_radius_94dp),
+                    animateAvatar
+            )
+
+            Glide.with(this)
+                    .asBitmap()
+                    .load(account.header)
+                    .centerCrop()
+                    .into(accountHeaderImageView)
+
+
+            accountAvatarImageView.setOnClickListener { avatarView ->
+                val intent = ViewMediaActivity.newSingleImageIntent(avatarView.context, avatar_url)
+
+                avatarView.transitionName =avatar_url
+                val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, avatarView, avatar_url)
+
+                startActivity(intent, options.toBundle())
+            }
         }
     }
 
@@ -423,7 +522,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             accountAvatarImageView.setOnClickListener { avatarView ->
                 val intent = ViewMediaActivity.newSingleImageIntent(avatarView.context, account.avatar)
 
-                avatarView.transitionName = account.avatar
+                avatarView.transitionName =account.avatar
                 val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, avatarView, account.avatar)
 
                 startActivity(intent, options.toBundle())
@@ -766,8 +865,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 showMuteAccountDialog(
                         this,
                         it.username
-                ) { notifications, duration ->
-                    viewModel.muteAccount(notifications, duration)
+                ) { notifications ->
+                    viewModel.muteAccount(notifications)
                 }
             }
         } else {

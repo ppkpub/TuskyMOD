@@ -49,6 +49,7 @@ import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.lifecycle.observe
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.TransitionManager
@@ -77,6 +78,9 @@ import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.activity_compose.*
+import org.ppkpub.ppklib.ODIN
+import org.ppkpub.ppklib.PPkDefine
+import org.ppkpub.ppklib.PTAP01DID
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -732,7 +736,78 @@ class ComposeActivity : BaseActivity(),
 
     private fun sendStatus() {
         enableButtons(false)
-        val contentText = composeEditField.text.toString()
+        mStatusContent = composeEditField.text.toString()
+        //modified by ppkpub,20210114
+        //Replacing the possibility of Chinese full-width characters
+        mStatusContent=mStatusContent.replace("ppk：","ppk:",true);
+
+        //ODIN pay function
+        if( mStatusContent.contains("\$ppk:",true) ){
+            var next_posn=0;
+            while( true ) {
+                next_posn=mStatusContent.indexOf("\$ppk:",next_posn,true);
+                if(next_posn<0){
+                    break;
+                }
+                next_posn++;
+
+                var end_posn=mStatusContent.indexOf(' ',next_posn);
+                if(end_posn<0){
+                    end_posn = mStatusContent.length;
+                    mStatusContent = mStatusContent+" "; //For replace later
+                }
+
+                if(end_posn>next_posn+4) { //Valid ODIN
+                    val user_odin_uri = mStatusContent.substring(next_posn, end_posn);
+
+                    mStatusContent = mStatusContent.replace(
+                            "$" + user_odin_uri + " ",
+                            "[$" + user_odin_uri + " " + getResources().getString(R.string.status_payto_odin_link) + " https://ppk001.sinaapp.com/odin/?me=" + user_odin_uri + " ]");
+                }
+
+                next_posn = end_posn;
+
+            }
+
+        }
+
+        //ODIN redirect
+        if( mStatusContent.contains("@ppk:",true) ){
+            var next_posn=0;
+            while( true ) {
+                next_posn=mStatusContent.indexOf("@ppk:",next_posn,true);
+                if(next_posn<0){
+                    break;
+                }
+                next_posn++;
+
+                var end_posn=mStatusContent.indexOf(' ',next_posn);
+                if(end_posn<0){
+                    end_posn = mStatusContent.length;
+                    mStatusContent = mStatusContent+" "; //For replace later
+                }
+
+                if(end_posn>next_posn+4) {//Valid ODIN
+                    val user_odin_uri = mStatusContent.substring(next_posn, end_posn);
+                    syncPPkEnd = false;
+                    Thread(Runnable { syncReplaceOdinRedirect(user_odin_uri) }).start()
+                    while (!syncPPkEnd) {
+                        Thread.sleep(100)
+                    }
+                }
+
+                next_posn = end_posn;
+            }
+
+            //Append prompt link of ODIN
+            if(mStatusContent.length <400 && mStatusContent.indexOf("http",0,true)<0)
+                mStatusContent = "$mStatusContent\n→"+getResources().getString(R.string.status_tail_about_odin);
+        }
+        //end
+
+        val contentText=mStatusContent;
+
+        //end
         var spoilerText = ""
         if (viewModel.showContentWarning.value!!) {
             spoilerText = composeContentWarningField.text.toString()
@@ -757,6 +832,29 @@ class ComposeActivity : BaseActivity(),
             composeEditField.error = getString(R.string.error_compose_character_limit)
             enableButtons(true)
         }
+    }
+
+    //added by ppkpub,20210115
+    private var syncPPkEnd: Boolean = false
+    private var mStatusContent = ""
+
+    private fun syncReplaceOdinRedirect(user_odin_uri: String) {
+        //Log.d("syncReplaceOdinRedirect","Search "+user_odin_uri);
+        val user_info = PTAP01DID.getPubUserInfo(user_odin_uri)
+        if (user_info != null) {
+            var obj_sns = user_info.optJSONObject(PPkDefine.ODIN_EXT_KEY_SNS);
+            if(obj_sns!=null){
+                var array_ids = obj_sns.optJSONArray("ActivityPub");
+                if(array_ids!=null) {
+                    var primary_mastodon_id = array_ids.optString(0);
+                    //Log.d("syncReplaceOdinRedirect","Matched "+primary_mastodon_id);
+                    if (primary_mastodon_id != null) {
+                        mStatusContent = mStatusContent.replace("@"+user_odin_uri+" ", "[@"+primary_mastodon_id+" ("+ODIN.formatPPkURI(user_odin_uri,false)+")] ");
+                    }
+                }
+            }
+        }
+        syncPPkEnd = true
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
