@@ -71,6 +71,7 @@ import kotlinx.android.synthetic.main.activity_account.*
 import kotlinx.android.synthetic.main.view_account_moved.*
 import org.ppkpub.ppklib.ODIN
 import org.ppkpub.ppklib.PPkDefine
+import org.ppkpub.ppklib.PPkUtil
 import org.ppkpub.ppklib.PTAP01DID
 import java.text.NumberFormat
 import javax.inject.Inject
@@ -391,14 +392,12 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             syncPPkEnd = false
             syncedOdinAvatarURL = null
 
-            val matcher = ODIN.matchPPkURIs(accountDisplayName.toString())
-            if (matcher.find()) {
-                val user_odin_uri = ODIN.formatPPkURI(matcher.group(), false)
-                if (user_odin_uri != null) {
-                    Thread(Runnable { syncUpdateOdinInfo(user_odin_uri) }).start()
-                    while (!syncPPkEnd) {
-                        Thread.sleep(100)
-                    }
+            val result_array = ODIN.matchPPkURIs(accountDisplayName.toString())
+            for (kk in result_array.indices) {
+                val user_odin_uri = result_array.get(kk) as String
+                Thread(Runnable { syncUpdateOdinInfo(user_odin_uri) }).start()
+                while (!syncPPkEnd) {
+                    Thread.sleep(100)
                 }
             }
 
@@ -442,7 +441,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             val tmp_host_domain = LinkHelper.getDomain(loadedAccount?.url)
 
             if(PTAP01DID.isSameSnsUser("ActivityPub",tmp_sns_id,tmp_host_domain,user_info.optJSONObject(PPkDefine.ODIN_EXT_KEY_SNS))) {
-                var tmp_html_str = user_info.optString("name", "anonymous")+" [<a href='https://ppk001.sinaapp.com/odin/?me="+user_odin_uri+"'>"+getResources().getString(R.string.lbl_payto_odin) +"</a>]";
+                var tmp_html_str =
+                        PPkUtil.subTextString(user_info.optString("name", "anonymous"),16) + " [<a href='https://ppk001.sinaapp.com/odin/?me="+user_odin_uri+"'>"+getResources().getString(R.string.lbl_payto_odin) +"</a>]";
                 accountDisplayNameTextView.setMovementMethod(LinkMovementMethod.getInstance());
                 accountDisplayNameTextView.setText( Html.fromHtml(tmp_html_str) )
 

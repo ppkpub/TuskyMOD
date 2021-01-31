@@ -115,15 +115,13 @@ class SearchActivity : BottomSheetActivity(), HasAndroidInjector {
             viewModel.currentQuery = intent.getStringExtra(SearchManager.QUERY) ?: ""
             //Log.d("currentQuery1",viewModel.currentQuery);
 
-            val matcher = ODIN.matchPPkURIs(viewModel.currentQuery)
-            if (matcher.find()) {
+            val result_array = ODIN.matchPPkURIs(viewModel.currentQuery)
+            if ( result_array.size>0 ) {
                 syncPPkEnd=false;
-                val user_odin_uri = ODIN.formatPPkURI(matcher.group(), false)
-                if (user_odin_uri != null) {
-                    Thread(Runnable { syncUpdateQueryODIN(user_odin_uri) }).start()
-                    while (!syncPPkEnd) {
-                        Thread.sleep(100)
-                    }
+                val user_odin_uri = result_array.get(0) as String
+                Thread(Runnable { syncUpdateQueryODIN(user_odin_uri) }).start()
+                while (!syncPPkEnd) {
+                    Thread.sleep(100)
                 }
             }
             //Log.d("currentQuery2",viewModel.currentQuery);

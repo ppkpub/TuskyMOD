@@ -216,11 +216,11 @@
          * the url can be changed to link to the localized version of the license.
     -->
     <string name="about_project_site">        Projekt honlapja:\n
-        https://tusky.app
+        https://tusky.app\nTuskyMOD: https://github.com/ppkpub/TuskyMOD/
     </string>
     <string name="about_bug_feature_request_site">Hibajelentés &amp; új funkciók igénylése:
-\n https://github.com/tuskyapp/Tusky/issues</string>
-    <string name="about_tusky_account">Tusky profilja</string>
+\n https://github.com/tuskyapp/Tusky/issues\nhttps://github.com/ppkpub/TuskyMOD/issues</string>
+    <string name="about_tusky_account">TuskyMOD profilja</string>
     <string name="status_share_content">Tülk tartalmának megosztása</string>
     <string name="status_share_link">Tülk linkjének megosztása</string>
     <string name="status_media_images">Képek</string>

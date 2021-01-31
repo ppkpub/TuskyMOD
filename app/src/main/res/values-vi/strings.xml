@@ -308,7 +308,7 @@
     <string name="status_media_images">Hình ảnh</string>
     <string name="status_share_link">URL tút</string>
     <string name="status_share_content">Nội dung của tút</string>
-    <string name="about_tusky_account">Trang cá nhân Tusky</string>
+    <string name="about_tusky_account">Trang cá nhân TuskyMOD</string>
     <string name="pref_title_confirm_reblogs">Hiện xác nhận trước khi chia sẻ</string>
     <string name="pref_title_show_cards_in_timelines">Hiện xem trước của link</string>
     <string name="warning_scheduling_interval">Mastodon giới hạn tối thiểu 5 phút.</string>

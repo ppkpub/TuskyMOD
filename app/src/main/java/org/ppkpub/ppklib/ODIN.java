@@ -1,10 +1,13 @@
 package org.ppkpub.ppklib;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -134,12 +137,34 @@ public class ODIN {
 
 
 
-  public static Matcher matchPPkURIs(String str) {
-        String pattern = "[pP][pP][kK][:：]\\w+([\\w-./]*)?";
+    public static ArrayList matchPPkURIs(String str) {
+        return matchPPkURIs(str,null);
+    }
+
+    public static ArrayList matchPPkURIs(String str,String add_prefix) {
+        ArrayList result_array=new ArrayList();
+
+        String pattern =  add_prefix==null ? "": "["+add_prefix+"]";
+        pattern +="[pP][pP][kK][:：]\\w+([\\w-./]*)?";
 
         Pattern r = Pattern.compile(pattern);
-        return r.matcher(str);
-  }
+        Matcher matcher = r.matcher(str);
+        while(matcher.find()){
+            String odin_uri=matcher.group();
+
+            Log.d("matchPPkURIs","find "+odin_uri);
+            if(add_prefix!=null)
+                odin_uri = odin_uri.substring(add_prefix.length());
+
+            odin_uri = ODIN.formatPPkURI(odin_uri,false);
+            if(odin_uri!=null  && result_array.indexOf(odin_uri)<0 )
+                result_array.add(odin_uri);
+        }
+        Collections.sort(result_array, Collections.reverseOrder());
+
+
+        return result_array;
+    }
   
   //获得PPk URI对应资源版本号，即结尾类似“*1.0”这样的描述，如果没有则返回空字符串
   public static String getPPkResourceVer(String ppk_uri){

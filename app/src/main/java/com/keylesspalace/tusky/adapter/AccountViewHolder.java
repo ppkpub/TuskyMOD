@@ -21,6 +21,7 @@ import org.ppkpub.ppklib.ODIN;
 import org.ppkpub.ppklib.PPkDefine;
 import org.ppkpub.ppklib.PTAP01DID;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 
 public class AccountViewHolder extends RecyclerView.ViewHolder {
@@ -50,19 +51,17 @@ public class AccountViewHolder extends RecyclerView.ViewHolder {
         try{
             this.syncPPkEnd=false;
             this.syncedOdinAvatarURL=null;
-            Matcher matcher = ODIN.matchPPkURIs(account.getName());
-            if (matcher.find()) {
-                final String user_odin_uri = ODIN.formatPPkURI(matcher.group(),false);
-                if(user_odin_uri!=null) {
-                    new Thread(new Runnable(){
-                        @Override
-                        public void run() {
-                            syncUpdateOdinInfo(user_odin_uri,account.getUsername());
-                        }
-                    }).start();
-                    while (!syncPPkEnd) {
-                        Thread.sleep(100);
+            ArrayList result_array = ODIN.matchPPkURIs(account.getName());
+            if ( result_array.size()>0 ) {
+                final String user_odin_uri =  (String)result_array.get(0);
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        syncUpdateOdinInfo(user_odin_uri,account.getUsername());
                     }
+                }).start();
+                while (!syncPPkEnd) {
+                    Thread.sleep(100);
                 }
             }
         } catch (InterruptedException e) {

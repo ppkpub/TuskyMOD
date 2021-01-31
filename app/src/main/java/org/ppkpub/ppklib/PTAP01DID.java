@@ -67,7 +67,13 @@ public class PTAP01DID {
 
       if(sns_name==null || odin_sns_set==null)
           return false;
+      
+      sns_name=sns_name.trim();
 
+      if(sns_name.indexOf('@')==0){//去掉开头的@字符
+          sns_name = sns_name.substring(1);
+      }
+      
       if ( sns_name.indexOf('@')<0 && sns_host_domain!=null) {
           /*
           try {

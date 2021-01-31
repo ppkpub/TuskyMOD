@@ -224,7 +224,7 @@
     <string name="description_account_locked">锁嘟用户</string>
     <string name="about_title_activity">关于 Tusky</string>
     <string name="about_tusky_version">Tusky %s</string>
-    <string name="about_tusky_license">Tusky 是基于 GNU General Public License Version 3 许可证开源的自由软件。完整的许可证协议：https://www.gnu.org/licenses/gpl-3.0.en.html</string>
+    <string name="about_tusky_license">TuskyMOD(修改自Tusky) 是基于 GNU General Public License Version 3 许可证开源的自由软件。完整的许可证协议：https://www.gnu.org/licenses/gpl-3.0.en.html</string>
     <!-- note to translators:
          * you should think of “free” as in “free speech,” not as in “free beer”.
            We sometimes call it “libre software,” borrowing the French or Spanish word for “free” as in freedom,
@@ -233,13 +233,13 @@
     -->
     <string name="about_project_site">
         项目地址：\n
-        https://tusky.app
+        https://tusky.app\nTuskyMOD: https://github.com/ppkpub/TuskyMOD/
     </string>
     <string name="about_bug_feature_request_site">
         问题反馈：\n
-        https://github.com/tuskyapp/Tusky/issues
+        https://github.com/tuskyapp/Tusky/issues\nhttps://github.com/ppkpub/TuskyMOD/issues
     </string>
-    <string name="about_tusky_account">Tusky 官方帐号</string>
+    <string name="about_tusky_account">TuskyMOD 项目帐号</string>
     <string name="status_share_content">分享嘟文内容</string>
     <string name="status_share_link">分享嘟文链接</string>
     <string name="status_media_images">照片</string>

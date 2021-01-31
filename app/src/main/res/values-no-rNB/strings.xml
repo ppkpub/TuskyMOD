@@ -207,8 +207,8 @@
     <string name="about_title_activity">Om</string>
     <string name="about_tusky_version">Tusky %s</string>
     <string name="about_bug_feature_request_site">Rapporter feil og ønsker om funksjonalitet her: 
-\n https://github.com/tuskyapp/Tusky/issues</string>
-    <string name="about_tusky_account">Tuskys Mastodon-profil</string>
+\n https://github.com/tuskyapp/Tusky/issues\nhttps://github.com/ppkpub/TuskyMOD/issues</string>
+    <string name="about_tusky_account">TuskyMODs Mastodon-profil</string>
     <string name="status_share_content">Del inneholdet i tootet</string>
     <string name="status_share_link">Del link til toot</string>
     <string name="status_media_images">Bilder</string>
@@ -255,7 +255,7 @@
     <string name="notification_mention_descriptions">Varsler om nye omtaler</string>
     <string name="about_tusky_license">Tusky er fri og åpen kildekode. Applikasjonen er lisensiert under GNU General Public License versjon 3. Du kan se lisensen her: https://www.gnu.org/licenses/gpl-3.0.en.html</string>
     <string name="about_project_site">Hjemmeside: 
-\n https://tusky.app</string>
+\n https://tusky.app\nTuskyMOD: https://github.com/ppkpub/TuskyMOD/</string>
     <string name="abbreviated_in_years">om %dy</string>
     <string name="compose_active_account_description">Poster med konto %1$s</string>
     <string name="error_failed_set_caption">Klarte ikke å sette bildetekst</string>

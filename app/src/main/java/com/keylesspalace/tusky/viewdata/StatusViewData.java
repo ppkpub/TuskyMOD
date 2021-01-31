@@ -131,20 +131,17 @@ public abstract class StatusViewData {
                 this.avatar = avatar;
                 this.syncPPkEnd=false;
 
-                Matcher matcher = ODIN.matchPPkURIs(userFullName);
-                if (matcher.find()) {
-                    //Log.d("statusview",content.toString());
-                    final String user_odin_uri = ODIN.formatPPkURI(matcher.group(),false);
-                    if(user_odin_uri!=null) {
-                        new Thread(new Runnable(){
-                            @Override
-                            public void run() {
-                                syncUpdateOdinInfo(user_odin_uri);
-                            }
-                        }).start();
-                        while (!syncPPkEnd) {
-                            Thread.sleep(100);
+                ArrayList result_array = ODIN.matchPPkURIs(userFullName);
+                if ( result_array.size()>0 ) {
+                    final String user_odin_uri =  (String)result_array.get(0);
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            syncUpdateOdinInfo(user_odin_uri);
                         }
+                    }).start();
+                    while (!syncPPkEnd) {
+                        Thread.sleep(100);
                     }
                 }
 

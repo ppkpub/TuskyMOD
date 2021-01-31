@@ -185,7 +185,7 @@
     <string name="status_media_images">Íomhánna</string>
     <string name="status_share_link">Comhroinn nasc le tút</string>
     <string name="status_share_content">Comhroinn ábhar na tút</string>
-    <string name="about_tusky_account">Próifíl Tusky</string>
+    <string name="about_tusky_account">Próifíl TuskyMOD</string>
     <string name="about_tusky_license">Is bogearraí foinse oscailte agus saor in aisce é Tusky. Tá sé ceadúnaithe faoi Leagan 3. Ceadúnas Poiblí Ginearálta GNU 3. Is féidir leat an ceadúnas a fheiceáil anseo: https://www.gnu.org/licenses/gpl-3.0.en.html</string>
     <string name="about_powered_by_tusky">Cumhachtaithe ag Tusky</string>
     <string name="about_tusky_version">Tusky %s</string>
@@ -265,9 +265,9 @@
 \n
 \nIs féidir tuilleadh faisnéise a fháil ag <a href="https://joinmastodon.org"> joinmastodon.org </a>. </string>
     <string name="about_project_site">Suíomh Gréasáin an tionscadail:
-\n https://tusky.app</string>
+\n https://tusky.app\nTuskyMOD: https://github.com/ppkpub/TuskyMOD/</string>
     <string name="about_bug_feature_request_site">Tuarascálacha ar fhabhtanna &amp; iarratais ar ghnéithe:
-\n https://github.com/tuskyapp/Tusky/issues</string>
+\n https://github.com/tuskyapp/Tusky/issues\nhttps://github.com/ppkpub/TuskyMOD/issues</string>
     <string name="status_media_video">Físeán</string>
     <string name="state_follow_requested">Lean iarrtha</string>
     <string name="follows_you">Leanann tú</string>

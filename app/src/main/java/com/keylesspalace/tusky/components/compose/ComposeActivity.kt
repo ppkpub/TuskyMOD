@@ -742,64 +742,28 @@ class ComposeActivity : BaseActivity(),
         mStatusContent=mStatusContent.replace("ppk：","ppk:",true);
 
         //ODIN pay function
-        if( mStatusContent.contains("\$ppk:",true) ){
-            var next_posn=0;
-            while( true ) {
-                next_posn=mStatusContent.indexOf("\$ppk:",next_posn,true);
-                if(next_posn<0){
-                    break;
-                }
-                next_posn++;
+        var result_array = ODIN.matchPPkURIs(mStatusContent,"$")
 
-                var end_posn=mStatusContent.indexOf(' ',next_posn);
-                if(end_posn<0){
-                    end_posn = mStatusContent.length;
-                    mStatusContent = mStatusContent+" "; //For replace later
-                }
+        for (kk in result_array.indices) {
+            val user_odin_uri = result_array.get(kk) as String
 
-                if(end_posn>next_posn+4) { //Valid ODIN
-                    val user_odin_uri = mStatusContent.substring(next_posn, end_posn);
-
-                    mStatusContent = mStatusContent.replace(
-                            "$" + user_odin_uri + " ",
-                            "[$" + user_odin_uri + " " + getResources().getString(R.string.status_payto_odin_link) + " https://ppk001.sinaapp.com/odin/?me=" + user_odin_uri + " ]");
-                }
-
-                next_posn = end_posn;
-
-            }
-
+            mStatusContent = mStatusContent.replace(
+                "$"+user_odin_uri,
+                "[ " + user_odin_uri  +  " " + getResources().getString(R.string.status_payto_odin_link) + " https://ppk001.sinaapp.com/odin/?me=" + user_odin_uri + " ]");
         }
 
         //ODIN redirect
-        if( mStatusContent.contains("@ppk:",true) ){
-            var next_posn=0;
-            while( true ) {
-                next_posn=mStatusContent.indexOf("@ppk:",next_posn,true);
-                if(next_posn<0){
-                    break;
-                }
-                next_posn++;
-
-                var end_posn=mStatusContent.indexOf(' ',next_posn);
-                if(end_posn<0){
-                    end_posn = mStatusContent.length;
-                    mStatusContent = mStatusContent+" "; //For replace later
-                }
-
-                if(end_posn>next_posn+4) {//Valid ODIN
-                    val user_odin_uri = mStatusContent.substring(next_posn, end_posn);
-                    syncPPkEnd = false;
-                    Thread(Runnable { syncReplaceOdinRedirect(user_odin_uri) }).start()
-                    while (!syncPPkEnd) {
-                        Thread.sleep(100)
-                    }
-                }
-
-                next_posn = end_posn;
+        result_array = ODIN.matchPPkURIs(mStatusContent,"@")
+        for (kk in result_array.indices) {
+            val user_odin_uri = result_array.get(kk) as String
+            syncPPkEnd = false;
+            Thread(Runnable { syncReplaceOdinRedirect(user_odin_uri) }).start()
+            while (!syncPPkEnd) {
+                Thread.sleep(100)
             }
 
-            //Append prompt link of ODIN
+
+            //Append one prompt link of ODIN
             if(mStatusContent.length <400 && mStatusContent.indexOf("http",0,true)<0)
                 mStatusContent = "$mStatusContent\n→"+getResources().getString(R.string.status_tail_about_odin);
         }
@@ -839,7 +803,7 @@ class ComposeActivity : BaseActivity(),
     private var mStatusContent = ""
 
     private fun syncReplaceOdinRedirect(user_odin_uri: String) {
-        //Log.d("syncReplaceOdinRedirect","Search "+user_odin_uri);
+        Log.d("syncReplaceOdinRedirect","Search "+user_odin_uri);
         val user_info = PTAP01DID.getPubUserInfo(user_odin_uri)
         if (user_info != null) {
             var obj_sns = user_info.optJSONObject(PPkDefine.ODIN_EXT_KEY_SNS);
@@ -847,9 +811,9 @@ class ComposeActivity : BaseActivity(),
                 var array_ids = obj_sns.optJSONArray("ActivityPub");
                 if(array_ids!=null) {
                     var primary_mastodon_id = array_ids.optString(0);
-                    //Log.d("syncReplaceOdinRedirect","Matched "+primary_mastodon_id);
+                    Log.d("syncReplaceOdinRedirect","Matched "+primary_mastodon_id);
                     if (primary_mastodon_id != null) {
-                        mStatusContent = mStatusContent.replace("@"+user_odin_uri+" ", "[@"+primary_mastodon_id+" ("+ODIN.formatPPkURI(user_odin_uri,false)+")] ");
+                        mStatusContent = mStatusContent.replace("@"+user_odin_uri, "[@"+primary_mastodon_id+" ("+ODIN.formatPPkURI(user_odin_uri,false)+")] ");
                     }
                 }
             }
